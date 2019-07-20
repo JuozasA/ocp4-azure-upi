@@ -165,6 +165,6 @@ To allow Kube APIServer to communicate with the kubelet running on nodes for log
 You can approve all `Pending` CSR requests using:
 
 ```sh
-oc get csr -ojson | jq -r '.items[] | select(.status == {} ) | .metadata.name' | xargs oc adm certificate approve
+oc get csr -o json | jq -r '.items[] | select(.status == {} ) | .metadata.name' | xargs oc adm certificate approve
 ```
 
