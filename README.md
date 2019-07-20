@@ -13,6 +13,12 @@ This Terraform based aproach will split VMs accross 3 Azure Availability Zones a
 Please see the topology bellow:
 ![Openshift Container Platform 4.1 Topology on Azure](./images/diagram.svg)
 
+Deployment can be split into 4 steps:
+ * Create Control Plane (masters) and Surrounding Infrastructure (LB,DNS,VNET etc.)
+ * Destroy Bootstrap VM
+ * Set the default Ingress controller to type HostNetwork
+ * Create Compute (worker) nodes
+
 ### Prereqs:
 
 This method uses the following tools:<br>
