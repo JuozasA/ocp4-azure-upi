@@ -1,4 +1,4 @@
-! /bin/bash
+#! /bin/bash
 
 if [ $(oc get ingresscontrollers -n openshift-ingress-operator | awk 'NR>1{print $1}' | wc -l) != 0 ]; then
 	for ingress in $(oc get ingresscontrollers -n openshift-ingress-operator | awk 'NR>1{print $1}'); do
