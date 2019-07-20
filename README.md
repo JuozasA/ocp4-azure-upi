@@ -1,4 +1,4 @@
-# Openshift Container Platform 4 deployment on Azure Public Cloud using User provisioned Infrastructure (developed on OCP 4.2 version)
+## Openshift Container Platform 4 deployment on Azure Public Cloud using User provisioned Infrastructure (developed on OCP 4.2 version)
 
 ![Openshift Container Platform 4.1 Topology on Azure](./images/diagram.svg)
 
@@ -59,7 +59,7 @@ Fill in other information in terraform vars:
 6. Wait for Cluster to complete installation:<br>
 `./openshift-install wait-for install-complete --dir=ignition-files`
 
-## Scale Up
+### Scale Up
 
 In order to add aditional worker node, use terraform scripts in scaleup directory.<br>
 
