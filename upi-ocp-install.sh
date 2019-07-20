@@ -1,12 +1,33 @@
 #! /bin/bash
 
 echo "CONTROL PLANE PROVISIONING STARTED..."
+terraform init 
+
+if [ $(echo $?) != 0 ]; then
+	exit
+fi
+
+terraform plan
+
+if [ $(echo $?) != 0 ]; then
+	exit
+fi
+
 terraform apply -auto-approve
+
+if [ $(echo $?) != 0 ]; then
+	exit
+fi
 
 ./openshift-install wait-for bootstrap-complete --dir=ignition-files
 
 echo "DESTROYING BOOTSTRAP VM..."
+
 terraform destroy -target=module.bootstrap -auto-approve
+
+if [ $(echo $?) != 0 ]; then
+	exit
+fi
 
 export KUBECONFIG=$(pwd)/ignition-files/auth/kubeconfig
 
@@ -28,7 +49,23 @@ echo "WORKERS PROVISIONING STARTED...\n"
 
 cd worker
 
+terraform init 
+
+if [ $(echo $?) != 0 ]; then
+	exit
+fi
+
+terraform plan
+
+if [ $(echo $?) != 0 ]; then
+	exit
+fi
+
 terraform apply -auto-approve
+
+if [ $(echo $?) != 0 ]; then
+	exit
+fi
 
 worker_count=`cat terraform.tfvars | grep worker_count | awk '{print $3}'`
 
