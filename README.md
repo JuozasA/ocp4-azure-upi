@@ -141,6 +141,10 @@ source_address_prefix = "X.X.X.X/24,10.0.0.0/16" (list of IP addresses or IP add
 $> ./upi-ocp-install.sh
 ```
 
+After Control Plane is deployed, script will replace the default Ingress Controller of type `LoadBalancerService` to type `HostNetwork`. This will disable the creation of Public facing Azure Load Balancer and will allow to have a custom Network Security Rules which won't be overwritten by Kubernetes.
+
+Once this is done, it will continue with Compute nodes deployment.
+
 ### Scale Up
 
 In order to add aditional worker node, use terraform scripts in scaleup directory.
