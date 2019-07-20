@@ -29,8 +29,11 @@ This method uses the following tools:<br>
 
 ### Preparation
 
-1. Prepare Azure Cloud for Openshift installation:
+1. Prepare Azure Cloud for Openshift installation:<br>
 https://github.com/openshift/installer/tree/master/docs/user/azure
+
+You need to follow this Installation section as well:<br>
+https://github.com/openshift/installer/blob/master/docs/user/azure/install.md#setup-your-red-hat-enterprise-linux-coreos-images
 
 1. Clone this repository
 
