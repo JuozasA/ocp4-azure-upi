@@ -1,7 +1,6 @@
 # Openshift Container Platform 4 deployment on Azure Public Cloud using User provisioned Infrastructure (developed on OCP 4.2 version)
 
-![Alt text](./images/diagram.svg)
-<img src="./images/diagram.svg">
+![Openshift Container Platform 4.1 Topology on Azure](./images/diagram.svg)
 
 Preparation:
 Follow the the link to get your environment ready: https://github.com/openshift/installer/tree/master/docs/user/azure
