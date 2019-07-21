@@ -78,6 +78,8 @@ module "dns" {
   private_dns_zone_name           = "${azurerm_dns_zone.private.name}"
   etcd_count                      = "${var.master_count}"
   etcd_ip_addresses               = "${module.master.ip_addresses}"
+  
+  private_dns_zone_id = "${azurerm_dns_zone.private.id}"
 }
 
 resource "azurerm_resource_group" "main" {
