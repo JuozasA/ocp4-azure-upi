@@ -244,8 +244,8 @@ oc get csr -o json | jq -r '.items[] | select(.status == {} ) | .metadata.name' 
 ### Change Ingress controller type on already provisioned cluster
 
 1. You need to create Load Balancer which will serve routers and add DNS records to forward `*.apps` and `*.apps.<clustername>` to Load Balancer frontend, or use existing Public LB (for control plane) and configure so it forwards the traffic from 443 and 80 to worker nodes.
-> You can check the `kubernetes` Load Balancer for configuration example, but Health Check probe will be tcp onc ports 80 or 443 instead of <NodePort>/healthz)
+> You can check the `kubernetes` Load Balancer for configuration example, but Health Check probe will be tcp onc ports 80 or 443 instead of "NodePort"/healthz)
 
 2. Run `disable-loadbalancer-service.sh`
 
-3. Check if router service is changed to ClusterIP and `kubernetes` LB is destroyed.
+3. Check if router service is changed to `ClusterIP` and `kubernetes` LB is destroyed.
