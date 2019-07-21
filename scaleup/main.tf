@@ -75,6 +75,12 @@ resource "azurerm_virtual_machine" "worker" {
   }
 }
 
+resource "azurerm_network_interface_backend_address_pool_association" "worker" {
+  network_interface_id    = "${data.azurerm_subscription.current.id}/resourceGroups/${var.cluster_id}-rg/providers/Microsoft.Network/networkInterfaces/${var.cluster_id}-worker${var.index}-nic"
+  backend_address_pool_id = "${data.azurerm_subscription.current.id}/resourceGroups/${var.cluster_id}-rg/providers/Microsoft.Network/loadBalancers/${var.cluster_id}-public-lb/backendAddressPools/${var.cluster_id}-public-lb-routers"
+  ip_configuration_name   = "${local.ip_configuration_name}" #must be the same as nic's ip configuration name.
+}
+
 data "azurerm_storage_account" "ignitions" {
   name                     = "ignition${local.cluster_nr}"
   resource_group_name      = "${var.cluster_id}-rg"
