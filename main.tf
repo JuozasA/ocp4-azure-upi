@@ -1,7 +1,7 @@
 locals {
   master_subnet_cidr = "${cidrsubnet(var.machine_cidr, 3, 0)}" #master subnet is a smaller subnet within the vnet. i.e from /21 to /24
   node_subnet_cidr   = "${cidrsubnet(var.machine_cidr, 3, 1)}" #node subnet is a smaller subnet within the vnet. i.e from /21 to /24
-  cluster_nr = "${split("-", "${var.cluster_id}")[1]}"
+  cluster_nr = "${split("-", "${var.cluster_id}")[length(split("-", "${var.cluster_id}")) - 1]}"
 }
 
 provider "azurerm" {
