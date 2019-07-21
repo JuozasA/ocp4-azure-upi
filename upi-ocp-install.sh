@@ -23,7 +23,7 @@ fi
 
 if [ $(echo $?) != 0 ]; then
         echo "Timed out waiting for bootstrap to complete. Sometimes it can take more that 30 minutes.
-Please ssh to bootstrap VM and run `journalctl -b -f -u bootkube.service` command to track bootstraping process. 
+Please ssh to bootstrap VM and run 'journalctl -b -f -u bootkube.service' command to track bootstraping process. 
 Once it completes, continue cluster provisioning manually:
 Destroy bootstrap vm: terraform destroy -target=module.bootstrap -auto-approve
 export KUBECONFIG environment variable: export KUBECONFIG=$(pwd)/ignition-files/auth/kubeconfig
@@ -33,7 +33,7 @@ Create compute nodes: cd worker; terraform apply -auto-approve
 Approve any pending CSRs:
 oc get csr -o json | jq -r '.items[] | select(.status == {} ) | .metadata.name' | xargs oc adm certificate approve
 		"
-		exit
+	exit
 fi
 
 export KUBECONFIG=$(pwd)/ignition-files/auth/kubeconfig
