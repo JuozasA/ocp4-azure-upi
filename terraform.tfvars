@@ -9,7 +9,6 @@ azure_image_id = "/resourceGroups/rhcos_images/providers/Microsoft.Compute/image
 azure_region = "uksouth"
 azure_base_domain_resource_group_name = "ocp-cluster"
 cluster_id = "openshift-lnkh2"
-cluster_domain = "openshift.example.com"
 base_domain = "example.com"
 machine_cidr = "10.0.0.0/16"
 master_count = 3
