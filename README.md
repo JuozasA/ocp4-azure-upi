@@ -54,11 +54,14 @@ $> cd ../
 4. Download openshift-install binary and get the pull-secret from:<br>
 https://cloud.redhat.com/openshift/install/azure/installer-provisioned 
 
-5. Copy openshift-install binary to `ocp4-azure-upi` directory<br>
+5. Copy openshift-install binary to `/usr/local/bin` directory<br>
+```sh
+cp openshift-install /usr/local/bin/
+```
 
 6. Generate install config files:<br>
 ```sh
-$> ./openshift-install create install-config --dir=ignition-files
+$> openshift-install create install-config --dir=ignition-files
 ```
 
 ```console
@@ -86,7 +89,7 @@ compute:
 
 7. Generate manifests:<br>
 ```sh
-$> ./openshift-install create manifests --dir=ignition-files
+$> openshift-install create manifests --dir=ignition-files
 ```
 
 7.1. Remove the files that define the control plane machines:<br>
@@ -103,7 +106,7 @@ Because you create and manage the worker machines yourself, you do not need to i
 
 8. Obtain the Ignition config files:<br>
 ```sh
-$> ./openshift-install create ignition-configs --dir=ignition-files
+$> openshift-install create ignition-configs --dir=ignition-files
 ```
 
 9. Extract the infrastructure name from the Ignition config file metadata, run one of the following commands:<br>
@@ -160,7 +163,9 @@ terraform plan
 terraform apply -auto-approve
 ```
 2.4. Once Terraform job is finished, run `openshift-install`. It will check when the bootstraping is finished.
-./openshift-install wait-for bootstrap-complete --dir=ignition-files
+```sh
+openshift-install wait-for bootstrap-complete --dir=ignition-files
+```
 
 2.5. Once the bootstraping is finished, export `kubeconfig` environment variable and replace the `default` Ingress Controller object with with the one having `endpointPublishingStrategy` of type HostNetwork. This will disable the creation of Public facing Azure Load Balancer and will allow to have a custom Network Security Rules which won't be overwritten by Kubernetes. 
 ```sh
@@ -202,7 +207,7 @@ oc get svc -n openshift-ingress
 
 2.10. Wait for installation to be completed. Run `openshift-install` command:
 ```sh
-./openshift-install wait-for install-complete --dir=ignition-files
+openshift-install wait-for install-complete --dir=ignition-files
 ```
 
 ### Scale Up
@@ -246,6 +251,9 @@ oc get csr -o json | jq -r '.items[] | select(.status == {} ) | .metadata.name' 
 1. You need to create Load Balancer which will serve routers and add DNS records to forward `*.apps` and `*.apps.<clustername>` to Load Balancer frontend, or use existing Public LB (for control plane) and configure so it forwards the traffic from 443 and 80 to worker nodes.
 > You can check the `kubernetes` Load Balancer for configuration example, but Health Check probe will be tcp onc ports 80 or 443 instead of "NodePort"/healthz)
 
-2. Run `disable-loadbalancer-service.sh`
+2. Run `disable-loadbalancer-service.sh`:
+```sh
+./disable-loadbalancer-service.sh
+```
 
 3. Check if router service is changed to `ClusterIP` and `kubernetes` LB is destroyed.
