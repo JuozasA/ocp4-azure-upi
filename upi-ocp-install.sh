@@ -21,12 +21,19 @@ fi
 
 ./openshift-install wait-for bootstrap-complete --dir=ignition-files
 
-echo "DESTROYING BOOTSTRAP VM..."
-
-terraform destroy -target=module.bootstrap -auto-approve
-
 if [ $(echo $?) != 0 ]; then
-	exit
+        echo "Timed out waiting for bootstrap to complete. Sometimes it can take more that 30 minutes.
+Please ssh to bootstrap VM and run `journalctl -b -f -u bootkube.service` command to track bootstraping process. 
+Once it completes, continue cluster provisioning manually:
+Destroy bootstrap vm: terraform destroy -target=module.bootstrap -auto-approve
+export KUBECONFIG environment variable: export KUBECONFIG=$(pwd)/ignition-files/auth/kubeconfig
+delete default ingress controller object: oc delete ingresscontroller default -n openshift-ingress-operator
+create customized default ingress controller object: oc create -f ingresscontroller-default.yaml
+Create compute nodes: cd worker; terraform apply -auto-approve
+Approve any pending CSRs:
+oc get csr -o json | jq -r '.items[] | select(.status == {} ) | .metadata.name' | xargs oc adm certificate approve
+		"
+		exit
 fi
 
 export KUBECONFIG=$(pwd)/ignition-files/auth/kubeconfig
@@ -35,9 +42,18 @@ if [ $(oc get ingresscontrollers -n openshift-ingress-operator | awk 'NR>1{print
 	for ingress in $(oc get ingresscontrollers -n openshift-ingress-operator | awk 'NR>1{print $1}'); do
 		oc delete ingresscontroller $ingress -n openshift-ingress-operator
 	done
+	oc create -f ingresscontroller-default.yaml
+else
+	oc create -f ingresscontroller-default.yaml
 fi
 
-oc create -f ./ingresscontroller-default.yaml
+echo "DESTROYING BOOTSTRAP VM..."
+
+terraform destroy -target=module.bootstrap -auto-approve
+
+if [ $(echo $?) != 0 ]; then
+	exit
+fi
 
 oc describe ingresscontroller/default -n openshift-ingress-operator
 
@@ -66,6 +82,8 @@ terraform apply -auto-approve
 if [ $(echo $?) != 0 ]; then
 	exit
 fi
+
+echo "Searching for any Pending CSRs"
 
 worker_count=`cat terraform.tfvars | grep worker_count | awk '{print $3}'`
 
