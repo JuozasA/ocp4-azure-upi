@@ -127,17 +127,17 @@ azure_master_root_volume_size = 64 <- Disk size for Master VMs
 azure_image_id = "/resourceGroups/rhcos_images/providers/Microsoft.Compute/images/rhcostestimage" <- Location of coreos image
 azure_region = "uksouth" <- Azure region (the one you've selected when creating install-config)
 azure_base_domain_resource_group_name = "ocp-cluster" <- Resource group for base domain and rhcos vhd blob.
-cluster_id = "openshift-lnkh2" <- infraID parameter extracted from metadata.json (step 4.)
+cluster_id = "openshift-lnkh2" <- infraID parameter extracted from metadata.json (step 9.)
 base_domain = "example.com"
 machine_cidr = "10.0.0.0/16" <- Address range which will be used for VMs
 master_count = 3 <- number of masters
 ```
 
-11. Open worker/terraform.tfvars and fill in information there as well.<br>
+11. Open `worker/terraform.tfvars` and fill in information there as well.<br>
 
 ### Start OCP v4.1 Deployment
 
-You can either run the upi-ocp-install.sh script or run the steps manually:
+You can either run the `upi-ocp-install.sh` script or run the steps manually:
 
 1. Run the installation script:<br>
 ```sh
