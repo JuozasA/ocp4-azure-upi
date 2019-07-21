@@ -125,7 +125,6 @@ azure_image_id = "/resourceGroups/rhcos_images/providers/Microsoft.Compute/image
 azure_region = "uksouth" <- Azure region (the one you've selected when creating install-config)
 azure_base_domain_resource_group_name = "ocp-cluster" <- Resource group of base domain and rhcos vhd blob.
 cluster_id = "openshift-lnkh2" <- infraID parameter extracted from metadata.json (step 4.)
-cluster_domain = "openshift.example.com" <- cluster domain consists of Cluster name and base domain
 base_domain = "example.com"
 machine_cidr = "10.0.0.0/16" <- Address range which will be used for VMs
 master_count = 3 <- number of masters
