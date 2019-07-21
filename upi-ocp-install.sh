@@ -92,10 +92,6 @@ while [ $(oc get csr | grep worker | grep Approved | wc -l) != $worker_count ]; 
 	sleep 3
 done
 
-cd ../
-
-./openshift-install wait-for install-complete --dir=ignition-files 2> /dev/null
-
 oc get svc -n openshift-ingress
 
 while [ $(oc get pods -n openshift-ingress | awk 'NR==2{print $2}') != "1/1" ]; do
@@ -103,14 +99,17 @@ while [ $(oc get pods -n openshift-ingress | awk 'NR==2{print $2}') != "1/1" ]; 
 	sleep 3
 done
 
-oc get pods -n openshift-ingress
+while [ $(oc get pods -n openshift-ingress | awk 'NR==2{print $2}') != "1/1" ]; do
+	oc get pods -n openshift-console
+	sleep 3
+done
 
 echo "Checking Openshift Web Console URL:"
 sleep 2
 echo "curl -kI https://console-openshift-console.apps.$(oc get dns/cluster -o yaml | grep baseDomain | awk '{print $2}')"
 
-echo "\n"
-
 curl -kI https://console-openshift-console.apps.$(oc get dns/cluster -o yaml | grep baseDomain | awk '{print $2}')
+
+cd ../
 
 ./openshift-install wait-for install-complete --dir=ignition-files
