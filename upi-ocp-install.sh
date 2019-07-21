@@ -96,7 +96,7 @@ while [ $(oc get pods -n openshift-ingress | awk 'NR==2{print $2}') != "1/1" ]; 
 	sleep 3
 done
 
-while [ $(oc get pods -n openshift-ingress | awk 'NR==2{print $2}') != "1/1" ]; do
+while [ $(oc get pods -n openshift-console | awk 'NR==2{print $2}') != "1/1" ]; do
 	oc get pods -n openshift-console
 	sleep 3
 done
