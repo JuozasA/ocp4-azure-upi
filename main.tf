@@ -2,6 +2,7 @@ locals {
   master_subnet_cidr = "${cidrsubnet(var.machine_cidr, 3, 0)}" #master subnet is a smaller subnet within the vnet. i.e from /21 to /24
   node_subnet_cidr   = "${cidrsubnet(var.machine_cidr, 3, 1)}" #node subnet is a smaller subnet within the vnet. i.e from /21 to /24
   cluster_nr = "${split("-", "${var.cluster_id}")[length(split("-", "${var.cluster_id}")) - 1]}"
+  cluster_domain = "${replace(var.cluster_id, "-${local.cluster_nr}", "")}.${var.base_domain}"
 }
 
 provider "azurerm" {
@@ -68,7 +69,7 @@ module "master" {
 
 module "dns" {
   source                          = "./dns"
-  cluster_domain                  = "${var.cluster_domain}"
+  cluster_domain                  = "${local.cluster_domain}"
   base_domain                     = "${var.base_domain}"
   external_lb_fqdn                = "${module.vnet.public_lb_pip_fqdn}"
   internal_lb_ipaddress           = "${module.vnet.internal_lb_ip_address}"
@@ -106,7 +107,7 @@ resource "azurerm_role_assignment" "main" {
 
 # https://github.com/MicrosoftDocs/azure-docs/issues/13728
 resource "azurerm_dns_zone" "private" {
-  name                           = "${var.cluster_domain}"
+  name                           = "${local.cluster_domain}"
   resource_group_name            = "${azurerm_resource_group.main.name}"
   zone_type                      = "Private"
   resolution_virtual_network_ids = ["${azurerm_virtual_network.cluster_vnet.id}"]
