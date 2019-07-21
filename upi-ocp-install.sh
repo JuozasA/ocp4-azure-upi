@@ -38,14 +38,9 @@ fi
 
 export KUBECONFIG=$(pwd)/ignition-files/auth/kubeconfig
 
-if [ $(oc get ingresscontrollers -n openshift-ingress-operator | awk 'NR>1{print $1}' | wc -l) != 0 ]; then
-	for ingress in $(oc get ingresscontrollers -n openshift-ingress-operator | awk 'NR>1{print $1}'); do
-		oc delete ingresscontroller $ingress -n openshift-ingress-operator
-	done
-	oc create -f ingresscontroller-default.yaml
-else
-	oc create -f ingresscontroller-default.yaml
-fi
+oc delete ingresscontroller default -n openshift-ingress-operator
+
+oc create -f ingresscontroller-default.yaml
 
 echo "DESTROYING BOOTSTRAP VM..."
 
