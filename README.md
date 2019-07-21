@@ -75,7 +75,7 @@ $> ./openshift-install create install-config --dir=ignition-files
 ? Pull Secret [? for help]
 ```
 
-6.1 Edit the install-config.yaml file to set the number of compute, or worker, replicas to 0, as shown in the following compute stanza:
+6.1. Edit the install-config.yaml file to set the number of compute, or worker, replicas to 0, as shown in the following compute stanza:
 ```console
 compute:
 - hyperthreading: Enabled
@@ -89,12 +89,12 @@ compute:
 $> ./openshift-install create manifests --dir=ignition-files
 ```
 
-7.1 Remove the files that define the control plane machines:<br>
+7.1. Remove the files that define the control plane machines:<br>
 ```sh
 $> rm -f ignition-files/openshift/99_openshift-cluster-api_master-machines-*
 ```
 
-7.2 Remove the Kubernetes manifest files that define the worker machines:<br>
+7.2. Remove the Kubernetes manifest files that define the worker machines:<br>
 ```sh
 $> rm -f ignition-files/openshift/99_openshift-cluster-api_worker-machineset-*
 ```
@@ -147,22 +147,22 @@ $> ./upi-ocp-install.sh
 
 2. Manual approach:
 
-2.1 Initialize Terraform directory:
+2.1. Initialize Terraform directory:
 ```sh
 terraform init
 ```
-2.2 Run Terraform Plan and check what resources will be provisioned:
+2.2. Run Terraform Plan and check what resources will be provisioned:
 ```sh
 terraform plan
 ```
-2.3 Once ready, run Terraform apply to provision Control plane resources:
+2.3. Once ready, run Terraform apply to provision Control plane resources:
 ```sh
 terraform apply -auto-approve
 ```
-2.4 Once Terraform job is finished, run `openshift-install`. It will check when the bootstraping is finished.
+2.4. Once Terraform job is finished, run `openshift-install`. It will check when the bootstraping is finished.
 ./openshift-install wait-for bootstrap-complete --dir=ignition-files
 
-2.5 Once the bootstraping is finished, export `kubeconfig` environment variable and replace the `default` Ingress Controller object with with the one having `endpointPublishingStrategy` of type HostNetwork. This will disable the creation of Public facing Azure Load Balancer and will allow to have a custom Network Security Rules which won't be overwritten by Kubernetes. 
+2.5. Once the bootstraping is finished, export `kubeconfig` environment variable and replace the `default` Ingress Controller object with with the one having `endpointPublishingStrategy` of type HostNetwork. This will disable the creation of Public facing Azure Load Balancer and will allow to have a custom Network Security Rules which won't be overwritten by Kubernetes. 
 ```sh
 export KUBECONFIG=$(pwd)/ignition-files/auth/kubeconfig
 oc delete ingresscontroller default -n openshift-ingress-operator
@@ -170,12 +170,12 @@ oc create -f ingresscontroller-default.yaml
 fi
 ```
 
-2.5 Since we dont need bootstrap VM anymore, we can remove it:
+2.6. Since we dont need bootstrap VM anymore, we can remove it:
 ```sh
 terraform destroy -target=module.bootstrap -auto-approve
 ```
 
-2.6 Now we can continue with Compute nodes provisioning: 
+2.7. Now we can continue with Compute nodes provisioning: 
 ```sh
 cd worker
 terraform init 
@@ -184,7 +184,7 @@ terraform apply -auto-approve
 cd ../
 ```
 
-2.7 Since we are provisioning Compute nodes manually, we need to approve kubelet CSRs:
+2.8. Since we are provisioning Compute nodes manually, we need to approve kubelet CSRs:
 ```sh
 worker_count=`cat worker/terraform.tfvars | grep worker_count | awk '{print $3}'`
 while [ $(oc get csr | grep worker | grep Approved | wc -l) != $worker_count ]; do
@@ -193,14 +193,14 @@ while [ $(oc get csr | grep worker | grep Approved | wc -l) != $worker_count ]; 
 done
 ```
 
-2.8 Check openshift-ingress service type (it should be type: ClusterIP):
+2.9. Check openshift-ingress service type (it should be type: ClusterIP):
 ```sh
 oc get svc -n openshift-ingress
  NAME                      TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                   AGE
  router-internal-default   *ClusterIP*   172.30.72.53   <none>        80/TCP,443/TCP,1936/TCP   37m
 ```
 
-2.9. Wait for installation to be completed. Run `openshift-install` command:
+2.10. Wait for installation to be completed. Run `openshift-install` command:
 ```sh
 ./openshift-install wait-for install-complete --dir=ignition-files
 ```
