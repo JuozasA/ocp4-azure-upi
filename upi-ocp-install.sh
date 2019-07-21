@@ -19,7 +19,7 @@ if [ $(echo $?) != 0 ]; then
 	exit
 fi
 
-./openshift-install wait-for bootstrap-complete --dir=ignition-files
+openshift-install wait-for bootstrap-complete --dir=ignition-files
 
 if [ $(echo $?) != 0 ]; then
         echo "Timed out waiting for bootstrap to complete. Sometimes it can take more that 30 minutes.
@@ -107,4 +107,4 @@ echo "curl -kI https://console-openshift-console.apps.$(oc get dns/cluster -o ya
 
 curl -kI https://console-openshift-console.apps.$(oc get dns/cluster -o yaml | grep baseDomain | awk '{print $2}')
 
-./openshift-install wait-for install-complete --dir=ignition-files
+openshift-install wait-for install-complete --dir=ignition-files
