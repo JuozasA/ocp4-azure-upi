@@ -56,10 +56,6 @@ variable "master_count" {
   type        = "string"
 }
 
-variable "cluster_domain" {
-  type        = "string"
-}
-
 variable "base_domain" {
   type        = "string"
 }
