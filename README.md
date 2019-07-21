@@ -129,7 +129,6 @@ cluster_domain = "openshift.example.com" <- cluster comain consists of Cluster n
 base_domain = "example.com"
 machine_cidr = "10.0.0.0/16" <- Address range which will be used for VMs
 master_count = 3 <- number of masters
-source_address_prefix = "X.X.X.X/24,10.0.0.0/16" (list of IP addresses or IP addresses/CIDR which will be allowed to access Openshift)
 ```
 
 6. Open worker/terraform.tfvars and fill in information there as well.<br>

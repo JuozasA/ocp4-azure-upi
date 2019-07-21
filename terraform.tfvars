@@ -13,4 +13,3 @@ cluster_domain = "openshift.example.com"
 base_domain = "example.com"
 machine_cidr = "10.0.0.0/16"
 master_count = 3
-source_address_prefix = "<IP/CIDR>,<IP2/CIDR>,10.0.0.0/16"

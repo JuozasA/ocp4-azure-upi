@@ -39,7 +39,6 @@ module "vnet" {
   cluster_id          = "${var.cluster_id}"
   region              = "${var.azure_region}"
   dns_label           = "${var.cluster_id}"
-  source_address_prefix = "${var.source_address_prefix}"
 
   # This is to create explicit dependency on private zone to exist before VMs are created in the vnet. https://github.com/MicrosoftDocs/azure-docs/issues/13728
   private_dns_zone_id = "${azurerm_dns_zone.private.id}"

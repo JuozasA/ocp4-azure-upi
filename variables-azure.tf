@@ -80,6 +80,3 @@ variable "azure_tenant_id" {
   type        = "string"
 }
 
-variable "source_address_prefix" {
-  type = "string"
-}
