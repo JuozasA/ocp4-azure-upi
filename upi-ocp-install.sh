@@ -83,6 +83,8 @@ if [ $(echo $?) != 0 ]; then
 	exit
 fi
 
+cd ../
+
 echo "Searching for any Pending CSRs"
 
 worker_count=`cat terraform.tfvars | grep worker_count | awk '{print $3}'`
@@ -109,7 +111,5 @@ sleep 2
 echo "curl -kI https://console-openshift-console.apps.$(oc get dns/cluster -o yaml | grep baseDomain | awk '{print $2}')"
 
 curl -kI https://console-openshift-console.apps.$(oc get dns/cluster -o yaml | grep baseDomain | awk '{print $2}')
-
-cd ../
 
 ./openshift-install wait-for install-complete --dir=ignition-files
