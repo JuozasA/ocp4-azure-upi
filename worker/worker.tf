@@ -2,7 +2,7 @@ locals {
   // The name of the masters' ipconfiguration is hardcoded to "pipconfig". It needs to match cluster-api
   // https://github.com/openshift/cluster-api-provider-azure/blob/master/pkg/cloud/azure/services/networkinterfaces/networkinterfaces.go#L131
   ip_configuration_name = "pipConfig"
-  cluster_nr = "${split("-", "${var.cluster_id}")[1]}"
+  cluster_nr = "${split("-", "${var.cluster_id}")[length(split("-", "${var.cluster_id}")) - 1]}"
 }
 
 provider "azurerm" {
