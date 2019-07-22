@@ -226,7 +226,7 @@ azure_region = "uksouth"
 cluster_id = "openshift-lnkh2"
 ```
 
-2. Run terraform init and the script:<br>
+2. Run `terraform init` and `terraform apply` commands:<br>
 ```sh
 $> cd scaleup
 $> terraform init
