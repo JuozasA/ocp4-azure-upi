@@ -167,12 +167,11 @@ terraform apply -auto-approve
 openshift-install wait-for bootstrap-complete --dir=ignition-files
 ```
 
-2.5. Once the bootstraping is finished, export `kubeconfig` environment variable and replace the `default` Ingress Controller object with with the one having `endpointPublishingStrategy` of type HostNetwork. This will disable the creation of Public facing Azure Load Balancer and will allow to have a custom Network Security Rules which won't be overwritten by Kubernetes. 
+2.5. Once the bootstraping is finished, export `kubeconfig` environment variable and replace the `default` Ingress Controller object with with the one having `endpointPublishingStrategy` of type `HostNetwork`. This will disable the creation of Public facing Azure Load Balancer and will allow to have a custom Network Security Rules which won't be overwritten by Kubernetes. 
 ```sh
 export KUBECONFIG=$(pwd)/ignition-files/auth/kubeconfig
 oc delete ingresscontroller default -n openshift-ingress-operator
 oc create -f ingresscontroller-default.yaml
-fi
 ```
 
 2.6. Since we dont need bootstrap VM anymore, we can remove it:
