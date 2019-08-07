@@ -26,6 +26,9 @@ This method uses the following tools:<br>
   * openshift-cli<br>
   * git<br>
   * jq (optional)
+  
+  NOTE: Free Trial account is not enough and Pay As You Go is recommended with increased quota for vCPU:<br>
+  https://blogs.msdn.microsoft.com/girishp/2015/09/20/increasing-core-quota-limits-in-azure/
 
 ### Preparation
 
