@@ -36,7 +36,7 @@ This method uses the following tools:<br>
 https://github.com/openshift/installer/tree/master/docs/user/azure
 
 You need to follow this Installation section as well:<br>
-https://github.com/openshift/installer/blob/master/docs/user/azure/install.md#setup-your-red-hat-enterprise-linux-coreos-images
+https://github.com/openshift/installer/blob/d0f7654bc4a0cf73392371962aef68cd9552b5dd/docs/user/azure/install.md
 
 2. Clone this repository
 
