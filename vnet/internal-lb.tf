@@ -3,7 +3,7 @@ locals {
 }
 
 resource "azurerm_lb" "internal" {
-  sku                 = "Standard"
+  sku                 = "Basic"
   name                = "${var.cluster_id}-internal-lb"
   resource_group_name = "${var.resource_group_name}"
   location            = "${var.region}"
@@ -16,10 +16,30 @@ resource "azurerm_lb" "internal" {
   }
 }
 
+resource "azurerm_lb" "router" {
+  sku                 = "Basic"
+  name                = "${var.cluster_id}-router-lb"
+  resource_group_name = "${var.resource_group_name}"
+  location            = "${var.region}"
+
+  frontend_ip_configuration {
+    name                          = "${local.internal_lb_frontend_ip_configuration_name}"
+    subnet_id                     = "${azurerm_subnet.master_subnet.id}"
+    private_ip_address_allocation = "Static"
+    private_ip_address            = "${cidrhost(var.master_subnet_cidr, -3)}" #last ip is reserved by azure
+  }
+}
+
 resource "azurerm_lb_backend_address_pool" "internal_lb_controlplane_pool" {
   resource_group_name = "${var.resource_group_name}"
   loadbalancer_id     = "${azurerm_lb.internal.id}"
   name                = "${var.cluster_id}-internal-controlplane"
+}
+
+resource "azurerm_lb_backend_address_pool" "internal_lb_worker_pool" {
+  resource_group_name = "${var.resource_group_name}"
+  loadbalancer_id     = "${azurerm_lb.router.id}"
+  name                = "${var.cluster_id}-internal-routers"
 }
 
 resource "azurerm_lb_rule" "internal_lb_rule_api_internal" {
@@ -59,8 +79,7 @@ resource "azurerm_lb_probe" "internal_lb_probe_sint" {
   number_of_probes    = 3
   loadbalancer_id     = "${azurerm_lb.internal.id}"
   port                = 22623
-  request_path        = "/healthz"
-  protocol            = "Https"
+  protocol            = "TCP"
 }
 
 resource "azurerm_lb_probe" "internal_lb_probe_api_internal" {
@@ -70,7 +89,45 @@ resource "azurerm_lb_probe" "internal_lb_probe_api_internal" {
   number_of_probes    = 3
   loadbalancer_id     = "${azurerm_lb.internal.id}"
   port                = 6443
-  request_path        = "/readyz"
-  protocol            = "Https"
+  protocol            = "TCP"
 }
 
+resource "azurerm_lb_rule" "public_lb_rule_http" {
+  name                           = "tcp-80"
+  resource_group_name            = "${var.resource_group_name}"
+  protocol                       = "Tcp"
+  backend_address_pool_id        = "${azurerm_lb_backend_address_pool.internal_lb_worker_pool.id}"
+  loadbalancer_id                = "${azurerm_lb.router.id}"
+  frontend_port                  = 80
+  backend_port                   = 80
+  frontend_ip_configuration_name = "${local.internal_lb_frontend_ip_configuration_name}"
+  enable_floating_ip             = false
+  idle_timeout_in_minutes        = 30
+  load_distribution              = "Default"
+  probe_id                       = "${azurerm_lb_probe.public_lb_http.id}"
+}
+
+resource "azurerm_lb_rule" "public_lb_rule_https" {
+  name                           = "tcp-443"
+  resource_group_name            = "${var.resource_group_name}"
+  protocol                       = "Tcp"
+  backend_address_pool_id        = "${azurerm_lb_backend_address_pool.internal_lb_worker_pool.id}"
+  loadbalancer_id                = "${azurerm_lb.router.id}"
+  frontend_port                  = 443
+  backend_port                   = 443
+  frontend_ip_configuration_name = "${local.internal_lb_frontend_ip_configuration_name}"
+  enable_floating_ip             = false
+  idle_timeout_in_minutes        = 30
+  load_distribution              = "Default"
+  probe_id                       = "${azurerm_lb_probe.public_lb_http.id}"
+}
+
+resource "azurerm_lb_probe" "public_lb_http" {
+  name                = "probe-http"
+  resource_group_name = "${var.resource_group_name}"
+  interval_in_seconds = 10
+  number_of_probes    = 3
+  loadbalancer_id     = "${azurerm_lb.router.id}"
+  port                = 80
+  protocol            = "TCP"
+}

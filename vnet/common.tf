@@ -7,13 +7,8 @@ locals {
 
   node_subnet_ids = "${azurerm_subnet.node_subnet.id}"
 
-  lb_fqdn = "${azurerm_lb.public.id}"
-
-  elb_backend_pool_id = "${azurerm_lb_backend_address_pool.master_public_lb_pool.id}"
-
   internal_lb_controlplane_pool_id = "${azurerm_lb_backend_address_pool.internal_lb_controlplane_pool.id}"
 
-  public_lb_id   = "${azurerm_lb.public.id}"
   internal_lb_id = "${azurerm_lb.internal.id}"
 }
 

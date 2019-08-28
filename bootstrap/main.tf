@@ -23,18 +23,6 @@ resource "azurerm_network_interface" "bootstrap" {
   }
 }
 
-resource "azurerm_network_interface_backend_address_pool_association" "public_lb_bootstrap" {
-  network_interface_id    = "${azurerm_network_interface.bootstrap.id}"
-  backend_address_pool_id = "${var.elb_backend_pool_id}"
-  ip_configuration_name   = "${local.bootstrap_nic_ip_configuration_name}"
-}
-
-resource "azurerm_network_interface_backend_address_pool_association" "internal_lb_bootstrap" {
-  network_interface_id    = "${azurerm_network_interface.bootstrap.id}"
-  backend_address_pool_id = "${var.ilb_backend_pool_id}"
-  ip_configuration_name   = "${local.bootstrap_nic_ip_configuration_name}"
-}
-
 data "azurerm_subscription" "current" {
 }
 

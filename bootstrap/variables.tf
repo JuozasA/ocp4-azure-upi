@@ -28,19 +28,13 @@ variable "identity" {
   description = "The user assigned identity id for the vm."
 }
 
+variable "subnet_id" {
+  type = "string"
+}
+
 variable "ignition" {
   type        = "string"
   description = "The content of the bootstrap ignition file."
-}
-
-variable "subnet_id" {
-  type        = "string"
-  description = "The subnet ID for the bootstrap node."
-}
-
-variable "elb_backend_pool_id" {
-  type        = "string"
-  description = "The external load balancer bakend pool id. used to attach the bootstrap NIC"
 }
 
 variable "ilb_backend_pool_id" {

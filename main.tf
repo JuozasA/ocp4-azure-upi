@@ -20,9 +20,8 @@ module "bootstrap" {
   vm_image                = "${var.azure_image_id}"
   identity                = "${azurerm_user_assigned_identity.main.id}"
   cluster_id              = "${var.cluster_id}"
+  subnet_id               = "${module.vnet.master_subnet_ids}"
   ignition                = "${data.ignition_config.bootstrap_redirect.rendered}"
-  subnet_id               = "${module.vnet.public_subnet_id}"
-  elb_backend_pool_id     = "${module.vnet.public_lb_backend_pool_id}"
   ilb_backend_pool_id     = "${module.vnet.internal_lb_backend_pool_id}"
   boot_diag_blob_endpoint = "${azurerm_storage_account.bootdiag.primary_blob_endpoint}"
   nsg_name                = "${module.vnet.master_nsg_name}"
@@ -54,14 +53,13 @@ module "master" {
   vm_image                = "${var.azure_image_id}"
   identity                = "${azurerm_user_assigned_identity.main.id}"
   ignition                = "${data.ignition_config.master_redirect.rendered}"
-  external_lb_id          = "${module.vnet.public_lb_id}"
-  elb_backend_pool_id     = "${module.vnet.public_lb_backend_pool_id}"
   ilb_backend_pool_id     = "${module.vnet.internal_lb_backend_pool_id}"
-  subnet_id               = "${module.vnet.public_subnet_id}"
   master_subnet_cidr      = "${local.master_subnet_cidr}"
+  subnet_id               = "${module.vnet.master_subnet_ids}"
   instance_count          = "${var.master_count}"
   boot_diag_blob_endpoint = "${azurerm_storage_account.bootdiag.primary_blob_endpoint}"
   os_volume_size          = "${var.azure_master_root_volume_size}"
+  availability_set_id    = "${azurerm_availability_set.control-plane.id}"
 
   # This is to create explicit dependency on private zone to exist before VMs are created in the vnet. https://github.com/MicrosoftDocs/azure-docs/issues/13728
   private_dns_zone_id = "${azurerm_dns_zone.private.id}"
@@ -69,22 +67,34 @@ module "master" {
 
 module "dns" {
   source                          = "./dns"
-  cluster_domain                  = "${local.cluster_domain}"
-  base_domain                     = "${var.base_domain}"
-  external_lb_fqdn                = "${module.vnet.public_lb_pip_fqdn}"
   internal_lb_ipaddress           = "${module.vnet.internal_lb_ip_address}"
   resource_group_name             = "${azurerm_resource_group.main.name}"
-  base_domain_resource_group_name = "${var.azure_base_domain_resource_group_name}"
-  private_dns_zone_name           = "${azurerm_dns_zone.private.name}"
+  private_dns_zone_name           = "${local.cluster_domain}"
   etcd_count                      = "${var.master_count}"
   etcd_ip_addresses               = "${module.master.ip_addresses}"
-  
+  ip_address                      = "${module.bootstrap.ip_address}"
   private_dns_zone_id = "${azurerm_dns_zone.private.id}"
 }
 
 resource "azurerm_resource_group" "main" {
   name     = "${var.cluster_id}-rg"
   location = "${var.azure_region}"
+}
+
+resource "azurerm_availability_set" "control-plane" {
+  name                = "${var.cluster_id}-as-cp"
+  location            = "${var.azure_region}"
+  resource_group_name = "${azurerm_resource_group.main.name}"
+  managed = "true"
+  platform_fault_domain_count = "2"
+}
+
+resource "azurerm_availability_set" "routers" {
+  name                = "${var.cluster_id}-as-rt"
+  location            = "${var.azure_region}"
+  resource_group_name = "${azurerm_resource_group.main.name}"
+  managed = "true"
+  platform_fault_domain_count = "2"
 }
 
 resource "azurerm_storage_account" "bootdiag" {

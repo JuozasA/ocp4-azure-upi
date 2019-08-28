@@ -36,10 +36,6 @@ variable "azure_master_root_volume_size" {
 type        = "string"
 }
 
-variable "azure_base_domain_resource_group_name" {
-type        = "string"
-}
-
 variable "azure_image_id" {
 type        = "string"
 }

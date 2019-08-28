@@ -12,6 +12,10 @@ variable "cluster_id" {
   type = "string"
 }
 
+variable "subnet_id" {
+  type = "string"
+}
+
 variable "vm_size" {
   type = "string"
 }
@@ -30,21 +34,8 @@ variable "instance_count" {
   type = "string"
 }
 
-variable "external_lb_id" {
-  type = "string"
-}
-
-variable "elb_backend_pool_id" {
-  type = "string"
-}
-
 variable "ilb_backend_pool_id" {
   type = "string"
-}
-
-variable "subnet_id" {
-  type        = "string"
-  description = "The subnet to attach the masters to."
 }
 
 variable "os_volume_size" {
@@ -70,4 +61,10 @@ variable "master_subnet_cidr" {
 variable "private_dns_zone_id" {
   type        = "string"
   description = "This is to create explicit dependency on private zone to exist before VMs are created in the vnet. https://github.com/MicrosoftDocs/azure-docs/issues/13728"
+}
+
+
+variable "availability_set_id" {
+  type        = "string"
+  description = "the master subnet cidr"
 }

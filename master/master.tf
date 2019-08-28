@@ -17,13 +17,6 @@ resource "azurerm_network_interface" "master" {
   }
 }
 
-resource "azurerm_network_interface_backend_address_pool_association" "master" {
-  count                   = "${var.instance_count}"
-  network_interface_id    = "${element(azurerm_network_interface.master.*.id, count.index)}"
-  backend_address_pool_id = "${var.elb_backend_pool_id}"
-  ip_configuration_name   = "${local.ip_configuration_name}" #must be the same as nic's ip configuration name.
-}
-
 resource "azurerm_network_interface_backend_address_pool_association" "master_internal" {
   count                   = "${var.instance_count}"
   network_interface_id    = "${element(azurerm_network_interface.master.*.id, count.index)}"
@@ -41,7 +34,8 @@ resource "azurerm_virtual_machine" "master" {
   resource_group_name   = "${var.resource_group_name}"
   network_interface_ids = ["${element(azurerm_network_interface.master.*.id, count.index)}"]
   vm_size               = "${var.vm_size}"
-  zones                 = ["${count.index%3 + 1}"]
+#  zones                 = ["${count.index%3 + 1}"]
+  availability_set_id   = "${var.availability_set_id}"
   tags                  = { "openshift": "master" }
 
   delete_os_disk_on_termination = true
