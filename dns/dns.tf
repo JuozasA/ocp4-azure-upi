@@ -3,7 +3,7 @@ resource "azurerm_dns_a_record" "apiint_internal" {
   zone_name           = "${var.private_dns_zone_name}"
   resource_group_name = "${var.resource_group_name}"
   ttl                 = 300
-  records             = ["${var.internal_lb_ipaddress}", "${var.ip_address}"]
+  records             = ["${var.internal_lb_ipaddress}"]
 }
 
 resource "azurerm_dns_a_record" "api_internal" {
@@ -30,11 +30,6 @@ resource "azurerm_dns_a_record" "etcd_a_nodes" {
   ttl                 = 60
   records             = ["${var.etcd_ip_addresses[count.index]}"]
 }
-
-#provisioner "local-exec" {
-#    command = "az dns_srv_record ",
-#    interpreter = ["PowerShell"]
-#  }
 
 resource "azurerm_dns_srv_record" "etcd_cluster" {
   name                = "_etcd-server-ssl._tcp"

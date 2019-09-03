@@ -10,6 +10,7 @@ provider "azurerm" {
   client_id       = "${var.azure_client_id}"
   client_secret   = "${var.azure_client_secret}"
   tenant_id       = "${var.azure_tenant_id}"
+  version         = "=1.32"
 }
 
 resource "azurerm_network_interface" "worker" {
@@ -31,7 +32,7 @@ data "azurerm_subscription" "current" {
 resource "azurerm_network_interface_backend_address_pool_association" "worker" {
   count                   = "${var.worker_count}"
   network_interface_id    = "${element(azurerm_network_interface.worker.*.id, count.index)}"
-  backend_address_pool_id = "${data.azurerm_subscription.current.id}/resourceGroups/${var.cluster_id}-rg/providers/Microsoft.Network/loadBalancers/${var.cluster_id}-router-lb/backendAddressPools/${var.cluster_id}-internal-routers"
+  backend_address_pool_id = "${data.azurerm_subscription.current.id}/resourceGroups/${var.cluster_id}-rg/providers/Microsoft.Network/loadBalancers/${var.cluster_id}-internal-lb/backendAddressPools/${var.cluster_id}-internal-routers"
   ip_configuration_name   = "${local.ip_configuration_name}" #must be the same as nic's ip configuration name.
 }
 
@@ -42,8 +43,8 @@ resource "azurerm_virtual_machine" "worker" {
   resource_group_name   = "${var.cluster_id}-rg"
   network_interface_ids = ["${element(azurerm_network_interface.worker.*.id, count.index)}"]
   vm_size               = "${var.azure_worker_vm_type}"
-  #zones                 = ["${count.index%3 + 1}"]
-  availability_set_id   = "${data.azurerm_subscription.current.id}/resourceGroups/${var.cluster_id}-rg/providers/Microsoft.Compute/availabilitySets/${var.cluster_id}-as-rt"
+  zones                 = ["${count.index%3 + 1}"]
+  #availability_set_id   = "${data.azurerm_subscription.current.id}/resourceGroups/${var.cluster_id}-rg/providers/Microsoft.Compute/availabilitySets/openshift-as-rt"
   tags                  = { "openshift": "compute" }
 
   identity {

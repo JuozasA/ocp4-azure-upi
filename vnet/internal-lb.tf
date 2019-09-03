@@ -3,7 +3,7 @@ locals {
 }
 
 resource "azurerm_lb" "internal" {
-  sku                 = "Basic"
+  sku                 = "Standard"
   name                = "${var.cluster_id}-internal-lb"
   resource_group_name = "${var.resource_group_name}"
   location            = "${var.region}"
@@ -16,20 +16,6 @@ resource "azurerm_lb" "internal" {
   }
 }
 
-resource "azurerm_lb" "router" {
-  sku                 = "Basic"
-  name                = "${var.cluster_id}-router-lb"
-  resource_group_name = "${var.resource_group_name}"
-  location            = "${var.region}"
-
-  frontend_ip_configuration {
-    name                          = "${local.internal_lb_frontend_ip_configuration_name}"
-    subnet_id                     = "${azurerm_subnet.master_subnet.id}"
-    private_ip_address_allocation = "Static"
-    private_ip_address            = "${cidrhost(var.master_subnet_cidr, -3)}" #last ip is reserved by azure
-  }
-}
-
 resource "azurerm_lb_backend_address_pool" "internal_lb_controlplane_pool" {
   resource_group_name = "${var.resource_group_name}"
   loadbalancer_id     = "${azurerm_lb.internal.id}"
@@ -38,7 +24,7 @@ resource "azurerm_lb_backend_address_pool" "internal_lb_controlplane_pool" {
 
 resource "azurerm_lb_backend_address_pool" "internal_lb_worker_pool" {
   resource_group_name = "${var.resource_group_name}"
-  loadbalancer_id     = "${azurerm_lb.router.id}"
+  loadbalancer_id     = "${azurerm_lb.internal.id}"
   name                = "${var.cluster_id}-internal-routers"
 }
 
@@ -97,7 +83,7 @@ resource "azurerm_lb_rule" "public_lb_rule_http" {
   resource_group_name            = "${var.resource_group_name}"
   protocol                       = "Tcp"
   backend_address_pool_id        = "${azurerm_lb_backend_address_pool.internal_lb_worker_pool.id}"
-  loadbalancer_id                = "${azurerm_lb.router.id}"
+  loadbalancer_id                = "${azurerm_lb.internal.id}"
   frontend_port                  = 80
   backend_port                   = 80
   frontend_ip_configuration_name = "${local.internal_lb_frontend_ip_configuration_name}"
@@ -112,7 +98,7 @@ resource "azurerm_lb_rule" "public_lb_rule_https" {
   resource_group_name            = "${var.resource_group_name}"
   protocol                       = "Tcp"
   backend_address_pool_id        = "${azurerm_lb_backend_address_pool.internal_lb_worker_pool.id}"
-  loadbalancer_id                = "${azurerm_lb.router.id}"
+  loadbalancer_id                = "${azurerm_lb.internal.id}"
   frontend_port                  = 443
   backend_port                   = 443
   frontend_ip_configuration_name = "${local.internal_lb_frontend_ip_configuration_name}"
@@ -127,7 +113,7 @@ resource "azurerm_lb_probe" "public_lb_http" {
   resource_group_name = "${var.resource_group_name}"
   interval_in_seconds = 10
   number_of_probes    = 3
-  loadbalancer_id     = "${azurerm_lb.router.id}"
+  loadbalancer_id     = "${azurerm_lb.internal.id}"
   port                = 80
   protocol            = "TCP"
 }

@@ -18,11 +18,6 @@ variable "azure_image_id" {
   type        = "string"
 }
 
-variable "availability_zone" {
-  type        = "string"
-  description = "Specify the Azure Availability Zone where new Worker node must be created (available options: 1, 2, 3)"
-}
-
 variable "index" {
   type        = "string"
   description = "New Worker node number (e.g. if last worker node is worker-1, then specify number '2')"

@@ -26,6 +26,12 @@ resource "azurerm_network_interface" "bootstrap" {
 data "azurerm_subscription" "current" {
 }
 
+resource "azurerm_network_interface_backend_address_pool_association" "master_internal" {
+  network_interface_id    = "${azurerm_network_interface.bootstrap.id}"
+  backend_address_pool_id = "${var.ilb_backend_pool_id}"
+  ip_configuration_name   = "${local.bootstrap_nic_ip_configuration_name}" #must be the same as nic's ip configuration name.
+}
+
 resource "azurerm_virtual_machine" "bootstrap" {
   name                  = "${var.cluster_id}-bootstrap"
   location              = "${var.region}"

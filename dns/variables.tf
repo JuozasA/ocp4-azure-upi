@@ -29,10 +29,10 @@ variable "resource_group_name" {
   description = "Resource group for the deployment"
 }
 
-variable "ip_address" {
-  type        = "string"
-  description = "Resource group for the deployment"
-}
+#variable "ip_address" {
+#  type        = "string"
+#  description = "Resource group for the deployment"
+#}
 
 variable "private_dns_zone_id" {
   type        = "string"

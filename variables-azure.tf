@@ -72,3 +72,10 @@ variable "azure_tenant_id" {
   type        = "string"
 }
 
+variable "vnet_name" {
+  type        = "string"
+}
+
+variable "common_group" {
+  type        = "string"
+}

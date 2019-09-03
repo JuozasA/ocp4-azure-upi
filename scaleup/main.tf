@@ -6,12 +6,12 @@ locals {
 }
 
 resource "azurerm_network_interface" "worker" {
-  name                = "${var.cluster_id}-worker${var.index}-nic"
+  name                = "${var.cluster_id}-master${var.index}-nic"
   location            = "${var.azure_region}"
   resource_group_name = "${var.cluster_id}-rg"
 
   ip_configuration {
-    subnet_id                     = "${data.azurerm_subscription.current.id}/resourceGroups/${var.cluster_id}-rg/providers/Microsoft.Network/virtualNetworks/${var.cluster_id}-vnet/subnets/${var.cluster_id}-worker-subnet"
+    subnet_id                     = "${data.azurerm_subscription.current.id}/resourceGroups/${var.cluster_id}-rg/providers/Microsoft.Network/virtualNetworks/${var.cluster_id}-vnet/subnets/${var.cluster_id}-master-subnet"
     name                          = "${local.ip_configuration_name}"
     private_ip_address_allocation = "Dynamic"
   }
@@ -22,19 +22,20 @@ provider "azurerm" {
   client_id       = "${var.azure_client_id}"
   client_secret   = "${var.azure_client_secret}"
   tenant_id       = "${var.azure_tenant_id}"
+  version         = "=1.32"
 }
 
 data "azurerm_subscription" "current" {
 }
 
 resource "azurerm_virtual_machine" "worker" {
-  name                  = "${var.cluster_id}-worker-${var.index}"
+  name                  = "${var.cluster_id}-master-${var.index}"
   location              = "${var.azure_region}"
   resource_group_name   = "${var.cluster_id}-rg"
-  network_interface_ids = ["${azurerm_virtual_machine.worker.id}"]
+  network_interface_ids = ["${azurerm_network_interface.worker.id}"]
   vm_size               = "${var.azure_worker_vm_type}"
-  zones                 = ["${var.availability_zone}"]
-  tags                  = { "openshift": "compute" }
+  availability_set_id   = "${data.azurerm_subscription.current.id}/resourceGroups/${var.cluster_id}-rg/providers/Microsoft.Compute/availabilitySets/${var.cluster_id}-as-cp"
+  tags                  = { "openshift": "master" }
 
   identity {
     type         = "UserAssigned"
@@ -42,7 +43,7 @@ resource "azurerm_virtual_machine" "worker" {
   }
 
   storage_os_disk {
-    name              = "${var.cluster_id}-worker-${var.index}_OSDisk" # os disk name needs to match cluster-api convention
+    name              = "${var.cluster_id}-master-${var.index}_OSDisk" # os disk name needs to match cluster-api convention
     caching           = "ReadWrite"
     create_option     = "FromImage"
     managed_disk_type = "Premium_LRS"
@@ -56,7 +57,7 @@ resource "azurerm_virtual_machine" "worker" {
   //we don't provide a ssh key, because it is set with ignition. 
   //it is required to provide at least 1 auth method to deploy a linux vm
   os_profile {
-    computer_name  = "${var.cluster_id}-worker-${var.index}"
+    computer_name  = "${var.cluster_id}-master-${var.index}"
     admin_username = "core"
     # The password is normally applied by WALA (the Azure agent), but this
     # isn't installed in RHCOS. As a result, this password is never set. It is
@@ -77,7 +78,7 @@ resource "azurerm_virtual_machine" "worker" {
 
 resource "azurerm_network_interface_backend_address_pool_association" "worker" {
   network_interface_id    = "${azurerm_virtual_machine.worker.id}"
-  backend_address_pool_id = "${data.azurerm_subscription.current.id}/resourceGroups/${var.cluster_id}-rg/providers/Microsoft.Network/loadBalancers/${var.cluster_id}-internal-lb/backendAddressPools/${var.cluster_id}-internal-lb-routers"
+  backend_address_pool_id = "${data.azurerm_subscription.current.id}/resourceGroups/${var.cluster_id}-rg/providers/Microsoft.Network/loadBalancers/${var.cluster_id}-internal-lb/backendAddressPools/${var.cluster_id}-internal-lb-controlplane"
   ip_configuration_name   = "${local.ip_configuration_name}" #must be the same as nic's ip configuration name.
 }
 
@@ -121,7 +122,7 @@ data "azurerm_storage_account_sas" "ignitions" {
 
 data "ignition_config" "redirect" {
   replace {
-    source = "https://${data.azurerm_storage_account.ignitions.name}.blob.core.windows.net/ignition/worker.ign${data.azurerm_storage_account_sas.ignitions.sas}"
+    source = "https://${data.azurerm_storage_account.ignitions.name}.blob.core.windows.net/ignition/master.ign${data.azurerm_storage_account_sas.ignitions.sas}"
   }
 }
 

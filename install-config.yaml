@@ -1,0 +1,49 @@
+apiVersion: v1
+baseDomain: cloud-ninja.name
+compute:
+- hyperthreading: Enabled
+  name: worker
+  platform: {}
+  replicas: 0
+controlPlane:
+  hyperthreading: Enabled
+  name: master
+  platform: {}
+  replicas: 3
+metadata:
+  creationTimestamp: null
+  name: ocp
+networking:
+  clusterNetwork:
+  - cidr: 10.128.0.0/14
+    hostPrefix: 23
+  machineCIDR: 10.0.1.0/24
+  networkType: OpenShiftSDN
+  serviceNetwork:
+  - 172.30.0.0/16
+platform:
+  none: {}
+pullSecret: '{"auths":{"cloud.openshift.com":{"auth":"b3mZjFz<...>OktOTU9KTUhNSSVo=","email":"a@b.com"},"quay.io":{"auth":"b3BlbnMDlOMVJSSVo=","email":"a@b.com"},"registry.redhat.io":
+  { "auth": "ME1HRTFNMkzJYnY0x1MUF0LUhRNDVO<...>aWFNMWdYNi0yUXlSdFZkQjRQZzNsaHMzOA=="},"10.0.0.4:5000":{"auth":"cmVnaXN0cnk0cnk=","email":"a@b.com"}}}'
+sshKey: |
+  ssh-rsa AAAAB3NzaC1yc2EAAU60cN3QJkWdRY4RK/<...>i6p8op/qU59V0lgzLWAUNHbWOc+0k47SYcz2VKqyyPFna3H8KWuSYn jln@ja.local
+imageContentSources:
+- mirrors:
+  - 10.0.0.4:5000/ocp4/openshift4
+  source: quay.io/openshift-release-dev/ocp-release-nightly
+- mirrors:
+  - 10.0.0.4:5000/ocp4/openshift4
+  source: quay.io/openshift-release-dev/ocp-v4.0-art-dev
+additionalTrustBundle: |
+  -----BEGIN CERTIFICATE-----
+  MIIFIjCCAwqgAwIBAgIBATANBgkqhkiG9w0BAQsFADCBoDELMAkGA1UEBhMCVUsx
+  DzANBgNVBAgMBkxvbmRvbjEPMA0GA1UEBwwGTG9uZG9uMRkwFwYDVQQKDBBUZXN0
+  <...>
+  N8FIsu5LZOiSvFaOEg3C/I2zYTgwYg==
+  -----END CERTIFICATE-----
+  -----BEGIN CERTIFICATE-----
+  MIIGJTCCBA2gAwIBAgIJAJtb029co8NrMA0GCSqGSIb3DQEBCwUAMIGgMQswCQYD
+  <...>
+  VQQGEwJVSzEPMA0GA1UECAwGTG9uZG9uMQ8wDQYDVQQHDAZMb25kb24xGTAXBgNV
+  24YtLDN3bQkQtaIPLuVPorVuD8LtXVTsXtTFe8I8D1P8GtrY9qc8IjY=
+  -----END CERTIFICATE-----

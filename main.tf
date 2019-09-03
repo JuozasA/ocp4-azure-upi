@@ -1,5 +1,5 @@
 locals {
-  master_subnet_cidr = "${cidrsubnet(var.machine_cidr, 3, 0)}" #master subnet is a smaller subnet within the vnet. i.e from /21 to /24
+  master_subnet_cidr = "${cidrsubnet(var.machine_cidr, 3, 2)}" #master subnet is a smaller subnet within the vnet. i.e from /21 to /24
   node_subnet_cidr   = "${cidrsubnet(var.machine_cidr, 3, 1)}" #node subnet is a smaller subnet within the vnet. i.e from /21 to /24
   cluster_nr = "${split("-", "${var.cluster_id}")[length(split("-", "${var.cluster_id}")) - 1]}"
   cluster_domain = "${replace(var.cluster_id, "-${local.cluster_nr}", "")}.${var.base_domain}"
@@ -10,11 +10,15 @@ provider "azurerm" {
   client_id       = "${var.azure_client_id}"
   client_secret   = "${var.azure_client_secret}"
   tenant_id       = "${var.azure_tenant_id}"
+  version         = "=1.32"
+}
+
+data "azurerm_subscription" "current" {
 }
 
 module "bootstrap" {
   source                  = "./bootstrap"
-  resource_group_name     = "${azurerm_resource_group.main.name}"
+  resource_group_name = "${azurerm_resource_group.main.name}"
   region                  = "${var.azure_region}"
   vm_size                 = "${var.azure_bootstrap_vm_type}"
   vm_image                = "${var.azure_image_id}"
@@ -46,7 +50,7 @@ module "vnet" {
 
 module "master" {
   source                  = "./master"
-  resource_group_name     = "${azurerm_resource_group.main.name}"
+  resource_group_name = "${azurerm_resource_group.main.name}"
   cluster_id              = "${var.cluster_id}"
   region                  = "${var.azure_region}"
   vm_size                 = "${var.azure_master_vm_type}"
@@ -59,7 +63,7 @@ module "master" {
   instance_count          = "${var.master_count}"
   boot_diag_blob_endpoint = "${azurerm_storage_account.bootdiag.primary_blob_endpoint}"
   os_volume_size          = "${var.azure_master_root_volume_size}"
-  availability_set_id    = "${azurerm_availability_set.control-plane.id}"
+  #availability_set_id    = "${azurerm_availability_set.control-plane.id}"
 
   # This is to create explicit dependency on private zone to exist before VMs are created in the vnet. https://github.com/MicrosoftDocs/azure-docs/issues/13728
   private_dns_zone_id = "${azurerm_dns_zone.private.id}"
@@ -72,29 +76,13 @@ module "dns" {
   private_dns_zone_name           = "${local.cluster_domain}"
   etcd_count                      = "${var.master_count}"
   etcd_ip_addresses               = "${module.master.ip_addresses}"
-  ip_address                      = "${module.bootstrap.ip_address}"
+  #ip_address                      = "${module.bootstrap.ip_address}"
   private_dns_zone_id = "${azurerm_dns_zone.private.id}"
 }
 
 resource "azurerm_resource_group" "main" {
   name     = "${var.cluster_id}-rg"
   location = "${var.azure_region}"
-}
-
-resource "azurerm_availability_set" "control-plane" {
-  name                = "${var.cluster_id}-as-cp"
-  location            = "${var.azure_region}"
-  resource_group_name = "${azurerm_resource_group.main.name}"
-  managed = "true"
-  platform_fault_domain_count = "2"
-}
-
-resource "azurerm_availability_set" "routers" {
-  name                = "${var.cluster_id}-as-rt"
-  location            = "${var.azure_region}"
-  resource_group_name = "${azurerm_resource_group.main.name}"
-  managed = "true"
-  platform_fault_domain_count = "2"
 }
 
 resource "azurerm_storage_account" "bootdiag" {
@@ -108,13 +96,40 @@ resource "azurerm_storage_account" "bootdiag" {
 resource "azurerm_user_assigned_identity" "main" {
   name                = "identity${local.cluster_nr}"
   resource_group_name = "${azurerm_resource_group.main.name}"
-  location            = "${azurerm_resource_group.main.location}"
+  location            = "${var.azure_region}"
 }
 
 resource "azurerm_role_assignment" "main" {
-  scope                = "${azurerm_resource_group.main.id}"
+  scope                = "${data.azurerm_subscription.current.id}/resourcegroups/${var.cluster_id}-rg"
   role_definition_name = "Contributor"
   principal_id         = "${azurerm_user_assigned_identity.main.principal_id}"
+}
+
+resource "azurerm_virtual_network" "cluster_vnet" {
+  name                = "${var.cluster_id}-vnet"
+  resource_group_name = "${azurerm_resource_group.main.name}"
+  location            = "${var.azure_region}"
+  address_space       = ["${var.machine_cidr}"]
+}
+
+resource "azurerm_virtual_network_peering" "test1" {
+  name                      = "common"
+  resource_group_name       = "${azurerm_resource_group.main.name}"
+  virtual_network_name      = "${azurerm_virtual_network.cluster_vnet.name}"
+  remote_virtual_network_id = "${data.azurerm_subscription.current.id}/resourceGroups/${var.common_group}/providers/Microsoft.Network/virtualNetworks/${var.vnet_name}"
+  allow_virtual_network_access = true
+  allow_forwarded_traffic      = true
+  use_remote_gateways          = true
+}
+
+resource "azurerm_virtual_network_peering" "test2" {
+  name                      = "ocp"
+  resource_group_name       = "${var.common_group}"
+  virtual_network_name      = "${var.vnet_name}"
+  remote_virtual_network_id = "${azurerm_virtual_network.cluster_vnet.id}"
+  allow_virtual_network_access = true
+  allow_forwarded_traffic      = true
+  allow_gateway_transit        = true
 }
 
 # https://github.com/MicrosoftDocs/azure-docs/issues/13728
@@ -123,13 +138,6 @@ resource "azurerm_dns_zone" "private" {
   resource_group_name            = "${azurerm_resource_group.main.name}"
   zone_type                      = "Private"
   resolution_virtual_network_ids = ["${azurerm_virtual_network.cluster_vnet.id}"]
-}
-
-resource "azurerm_virtual_network" "cluster_vnet" {
-  name                = "${var.cluster_id}-vnet"
-  resource_group_name = "${azurerm_resource_group.main.name}"
-  location            = "${var.azure_region}"
-  address_space       = ["${var.machine_cidr}"]
 }
 
 resource "azurerm_storage_account" "ignition" {
@@ -225,3 +233,5 @@ data "ignition_config" "worker_redirect" {
     source = "${azurerm_storage_blob.ignition-worker.url}${data.azurerm_storage_account_sas.ignition.sas}"
   }
 }
+
+

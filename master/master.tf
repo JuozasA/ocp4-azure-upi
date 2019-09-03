@@ -34,8 +34,8 @@ resource "azurerm_virtual_machine" "master" {
   resource_group_name   = "${var.resource_group_name}"
   network_interface_ids = ["${element(azurerm_network_interface.master.*.id, count.index)}"]
   vm_size               = "${var.vm_size}"
-#  zones                 = ["${count.index%3 + 1}"]
-  availability_set_id   = "${var.availability_set_id}"
+  zones                 = ["${count.index%3 + 1}"]
+  #availability_set_id   = "${var.availability_set_id}"
   tags                  = { "openshift": "master" }
 
   delete_os_disk_on_termination = true
