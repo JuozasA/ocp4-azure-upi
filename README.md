@@ -54,17 +54,22 @@ $> terraform init
 $> cd ../
 ```
 
-4. Download openshift-install binary and get the pull-secret from:<br>
+4. Download openshift-install binary for 4.2 or latest (4.1 does not have azure option for install-config.yaml file) and get the pull-secret from:<br>
 https://cloud.redhat.com/openshift/install/azure/installer-provisioned 
 
-5. Copy openshift-install binary to `/usr/local/bin` directory<br>
+4.1 Download openshift-install 4.1 binary:<br>
+https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.1.20/
+
+5. Copy openshift-install for 4.2 and 4.1 binaries (rename 4.2 version to openshift-install-4.2) to `/usr/local/bin` directory<br>
 ```sh
 cp openshift-install /usr/local/bin/
+
+cp openshift-install /usr/local/bin/openshift-install-4.2
 ```
 
-6. Generate install config files:<br>
+6. Generate install config files with 4.2 (or latest) installer:<br>
 ```sh
-$> openshift-install create install-config --dir=ignition-files
+$> openshift-install-4.2 create install-config --dir=ignition-files
 ```
 
 ```console
@@ -90,7 +95,9 @@ compute:
   replicas: 0
 ```
 
-7. Generate manifests:<br>
+6.2 Make a copy of install-config.yaml file since you'll need the data (e.g. machine CIDR) later.
+
+7. Generate manifests by using 4.1 installer:<br>
 ```sh
 $> openshift-install create manifests --dir=ignition-files
 ```
@@ -107,7 +114,7 @@ $> rm -f ignition-files/openshift/99_openshift-cluster-api_worker-machineset-*
 
 Because you create and manage the worker machines yourself, you do not need to initialize these machines.<br>
 
-8. Obtain the Ignition config files:<br>
+8. Obtain the Ignition config files by using 4.1 installer:<br>
 ```sh
 $> openshift-install create ignition-configs --dir=ignition-files
 ```
@@ -118,7 +125,7 @@ $> jq -r .infraID ignition-files/metadata.json
 $> egrep -o 'infraID.*,' ignition-files/metadata.json
 ```
 
-10. Open terraform.tfvars file and fill in the variables:<br>
+10. Open terraform.tfvars file and fill in the variables some of them must be the same like in install-config.yaml:<br>
 ```console
 azure_subscription_id = ""
 azure_client_id = ""
@@ -207,9 +214,9 @@ oc get svc -n openshift-ingress
  router-internal-default   *ClusterIP*   172.30.72.53   <none>        80/TCP,443/TCP,1936/TCP   37m
 ```
 
-2.10. Wait for installation to be completed. Run `openshift-install` command:
+2.10. Wait for installation to be completed. Run below command to obtain kubeadmin username/password:
 ```sh
-openshift-install wait-for install-complete --dir=ignition-files
+echo "'kubeadmin' user password: $(cat $(pwd)/ignition-files/auth/kubeadmin-password)" && oc get routes -n openshift-console | awk 'NR==2{print $2}'
 ```
 
 ### Scale Up
