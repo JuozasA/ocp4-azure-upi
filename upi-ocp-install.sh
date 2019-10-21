@@ -107,4 +107,6 @@ echo "curl -kI https://console-openshift-console.apps.$(oc get dns/cluster -o ya
 
 curl -kI https://console-openshift-console.apps.$(oc get dns/cluster -o yaml | grep baseDomain | awk '{print $2}')
 
-openshift-install wait-for install-complete --dir=ignition-files
+echo "'kubeadmin' user password: $(cat $(pwd)/ignition-files/auth/kubeadmin-password)"
+
+oc get routes -n openshift-console | awk 'NR==2{print $2}'
