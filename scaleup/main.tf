@@ -31,7 +31,7 @@ resource "azurerm_virtual_machine" "worker" {
   name                  = "${var.cluster_id}-worker-${var.index}"
   location              = "${var.azure_region}"
   resource_group_name   = "${var.cluster_id}-rg"
-  network_interface_ids = ["${azurerm_virtual_machine.worker.id}"]
+  network_interface_ids = ["${azurerm_network_interface.worker.id}"]
   vm_size               = "${var.azure_worker_vm_type}"
   zones                 = ["${var.availability_zone}"]
   tags                  = { "openshift": "compute" }
